@@ -1,13 +1,16 @@
 import CalendarSlotCell from './CalendarSlotCell'
 import { getWeeksForMonth, findEventForSlot, MONTH_NAMES } from '../../utils/calendarHelpers'
 
-export default function CalendarMonth({ month, slots, events, regionId, showWeekdays }) {
+export default function CalendarMonth({ month, slots, events, regionId, showWeekdays, selectedSlot, onSelectSlot }) {
   const weeks = getWeeksForMonth(slots, month)
 
   // When weekdays hidden, skip weeks that have no Fri or Weekend slot
   const visibleWeeks = showWeekdays
     ? weeks
     : weeks.filter((w) => w.fri || w.weekend)
+
+  const isSlotSelected = (slot) =>
+    selectedSlot && slot && selectedSlot.date === slot.date && selectedSlot.type === slot.type
 
   const gridCols = showWeekdays
     ? 'grid-cols-[1fr_1fr_1fr_1fr_1.4fr]'
@@ -53,16 +56,22 @@ export default function CalendarMonth({ month, slots, events, regionId, showWeek
                         slot={week.tue}
                         event={week.tue ? findEventForSlot(week.tue, events) : null}
                         regionId={regionId}
+                        onSelectSlot={onSelectSlot}
+                        isSelected={isSlotSelected(week.tue)}
                       />
                       <CalendarSlotCell
                         slot={week.wed}
                         event={week.wed ? findEventForSlot(week.wed, events) : null}
                         regionId={regionId}
+                        onSelectSlot={onSelectSlot}
+                        isSelected={isSlotSelected(week.wed)}
                       />
                       <CalendarSlotCell
                         slot={week.thu}
                         event={week.thu ? findEventForSlot(week.thu, events) : null}
                         regionId={regionId}
+                        onSelectSlot={onSelectSlot}
+                        isSelected={isSlotSelected(week.thu)}
                       />
                     </>
                   )}
@@ -72,12 +81,16 @@ export default function CalendarMonth({ month, slots, events, regionId, showWeek
                       event={friEvent}
                       regionId={regionId}
                       weekendEvent={weekendEvent}
+                      onSelectSlot={onSelectSlot}
+                      isSelected={isSlotSelected(week.fri)}
                     />
                   </div>
                   <CalendarSlotCell
                     slot={week.weekend}
                     event={weekendEvent}
                     regionId={regionId}
+                    onSelectSlot={onSelectSlot}
+                    isSelected={isSlotSelected(week.weekend)}
                   />
                 </div>
               )

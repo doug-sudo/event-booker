@@ -1,12 +1,44 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import CalendarMonth from './CalendarMonth'
 import CalendarLegend from './CalendarLegend'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import { getSlotsForYear } from '../../utils/calendarHelpers'
+import { formatSlotDateFull } from '../../utils/dateFormatters'
 
 export default function EventCalendar({ events, regionId, loading }) {
   const allSlots = useMemo(() => getSlotsForYear(2026), [])
   const [showWeekdays, setShowWeekdays] = useState(false)
+  const [selectedSlot, setSelectedSlot] = useState(null)
+  const [selectedType, setSelectedType] = useState(null)
+  const navigate = useNavigate()
+
+  const handleSelectSlot = useCallback((slot, type) => {
+    // Toggle off if same slot clicked again
+    if (selectedSlot?.date === slot.date && selectedSlot?.type === slot.type) {
+      setSelectedSlot(null)
+      setSelectedType(null)
+    } else {
+      setSelectedSlot(slot)
+      setSelectedType(type)
+    }
+  }, [selectedSlot])
+
+  function handleConfirm() {
+    if (!selectedSlot || !regionId) return
+
+    if (selectedType === 'friday') {
+      const fri = new Date(selectedSlot.date + 'T00:00:00')
+      const sat = new Date(fri)
+      sat.setDate(sat.getDate() + 1)
+      const satStr = `${sat.getFullYear()}-${String(sat.getMonth() + 1).padStart(2, '0')}-${String(sat.getDate()).padStart(2, '0')}`
+      navigate(`/register?region=${regionId}&date=${satStr}&type=weekend&includeFriday=true`)
+    } else if (selectedType === 'weekend') {
+      navigate(`/register?region=${regionId}&date=${selectedSlot.date}&type=weekend`)
+    } else if (selectedType === 'weekday') {
+      navigate(`/register?region=${regionId}&date=${selectedSlot.date}&type=weekday`)
+    }
+  }
 
   if (loading) {
     return (
@@ -28,6 +60,23 @@ export default function EventCalendar({ events, regionId, loading }) {
   // Total available slots minus holidays
   const totalSlots = visibleSlots.length
   const openCount = totalSlots - bookedCount - holidayCount
+
+  // Build confirmation label
+  let confirmLabel = ''
+  if (selectedSlot) {
+    if (selectedType === 'friday') {
+      // Friday → Fri-Sun event
+      const fri = new Date(selectedSlot.date + 'T00:00:00')
+      const sun = new Date(fri)
+      sun.setDate(sun.getDate() + 2)
+      const month = fri.toLocaleDateString('en-US', { month: 'long' })
+      confirmLabel = `Fri-Sun, ${month} ${fri.getDate()}-${sun.getDate()}, ${fri.getFullYear()}`
+    } else if (selectedType === 'weekend') {
+      confirmLabel = `Sat-Sun, ${formatSlotDateFull(selectedSlot)}`
+    } else {
+      confirmLabel = formatSlotDateFull(selectedSlot)
+    }
+  }
 
   return (
     <div>
@@ -56,6 +105,30 @@ export default function EventCalendar({ events, regionId, loading }) {
         </div>
       </div>
 
+      {/* Selection confirmation bar */}
+      {selectedSlot && (
+        <div className="sticky top-0 z-20 bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+          <div className="text-sm">
+            <span className="text-green-800 font-medium">Selected: </span>
+            <span className="text-green-900 font-semibold">{confirmLabel}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { setSelectedSlot(null); setSelectedType(null) }}
+              className="text-sm text-green-700 hover:text-green-900 underline cursor-pointer"
+            >
+              Change date
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="bg-primary hover:bg-primary-dark text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors cursor-pointer"
+            >
+              Continue to Register
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 12-month grid — 3 cols for wider month cards with table layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {Array.from({ length: 12 }, (_, month) => (
@@ -66,6 +139,8 @@ export default function EventCalendar({ events, regionId, loading }) {
             events={events}
             regionId={regionId}
             showWeekdays={showWeekdays}
+            selectedSlot={selectedSlot}
+            onSelectSlot={handleSelectSlot}
           />
         ))}
       </div>

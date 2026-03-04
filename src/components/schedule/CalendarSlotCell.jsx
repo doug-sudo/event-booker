@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { EVENT_TYPES } from '../../utils/constants'
 import { formatSlotDate, formatDate } from '../../utils/dateFormatters'
 
-export default function CalendarSlotCell({ slot, event, regionId, weekendEvent }) {
+export default function CalendarSlotCell({ slot, event, regionId, weekendEvent, onSelectSlot, isSelected }) {
   const [showTooltip, setShowTooltip] = useState(false)
-  const navigate = useNavigate()
 
   if (!slot) {
     // Empty cell placeholder
@@ -24,20 +22,14 @@ export default function CalendarSlotCell({ slot, event, regionId, weekendEvent }
   const eventInfo = event ? EVENT_TYPES[event.event_type] : null
 
   function handleClick() {
-    if (!regionId) return
+    if (!regionId || !onSelectSlot) return
 
     if (slot.type === 'friday' && isOpen && !isFridayBlocked) {
-      // Clicking open Friday → go to register with weekend date, includeFriday=true
-      // Calculate the Saturday date (next day after Friday)
-      const fri = new Date(slot.date + 'T00:00:00')
-      const sat = new Date(fri)
-      sat.setDate(sat.getDate() + 1)
-      const satStr = `${sat.getFullYear()}-${String(sat.getMonth() + 1).padStart(2, '0')}-${String(sat.getDate()).padStart(2, '0')}`
-      navigate(`/register?region=${regionId}&date=${satStr}&type=weekend&includeFriday=true`)
+      onSelectSlot(slot, 'friday')
     } else if (slot.type === 'weekend' && isOpen) {
-      navigate(`/register?region=${regionId}&date=${slot.date}&type=weekend`)
+      onSelectSlot(slot, 'weekend')
     } else if (slot.type === 'weekday' && isOpen) {
-      navigate(`/register?region=${regionId}&date=${slot.date}&type=weekday`)
+      onSelectSlot(slot, 'weekday')
     }
   }
 
@@ -51,6 +43,8 @@ export default function CalendarSlotCell({ slot, event, regionId, weekendEvent }
     cellClasses += 'bg-gray-400 text-white cursor-default'
   } else if (isFridayBlocked) {
     cellClasses += 'bg-gray-50 text-gray-300 cursor-not-allowed'
+  } else if (isSelected) {
+    cellClasses += 'bg-primary text-white border-2 border-primary ring-2 ring-primary/30 cursor-pointer'
   } else {
     cellClasses += 'bg-white border border-primary/30 text-primary hover:border-primary hover:bg-green-50 cursor-pointer'
   }
