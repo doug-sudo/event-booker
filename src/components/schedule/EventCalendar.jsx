@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CalendarMonth from './CalendarMonth'
 import CalendarLegend from './CalendarLegend'
@@ -12,6 +12,7 @@ export default function EventCalendar({ events, regionId, loading }) {
   const [selectedSlot, setSelectedSlot] = useState(null)
   const [selectedType, setSelectedType] = useState(null)
   const navigate = useNavigate()
+  const calendarTopRef = useRef(null)
 
   const handleSelectSlot = useCallback((slot, type) => {
     // Toggle off if same slot clicked again
@@ -21,6 +22,10 @@ export default function EventCalendar({ events, regionId, loading }) {
     } else {
       setSelectedSlot(slot)
       setSelectedType(type)
+      // Scroll to top of calendar so confirmation bar is visible
+      setTimeout(() => {
+        calendarTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 50)
     }
   }, [selectedSlot])
 
@@ -79,7 +84,7 @@ export default function EventCalendar({ events, regionId, loading }) {
   }
 
   return (
-    <div>
+    <div ref={calendarTopRef}>
       {/* Legend + toggle + stats */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div className="flex items-center gap-6">
