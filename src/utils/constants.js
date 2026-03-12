@@ -21,8 +21,22 @@ export const EVENT_REQUIREMENTS = [
   'Power source',
   "Space for a 10' x 10' trade-in area (inside or outside the store weather-permitting)",
   "10' x 10' storage for the trade-ins over the weekend (for pick-up on Mon or Tue following the event)",
-  '3 or more pallets for shipping post-event',
 ]
+
+// 30-minute increments from 6:00 AM to 11:00 PM
+export const TIME_OPTIONS = (() => {
+  const options = []
+  for (let h = 6; h <= 23; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+      const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h
+      const ampm = h >= 12 ? 'PM' : 'AM'
+      const label = `${hour12}:${String(m).padStart(2, '0')} ${ampm}`
+      options.push({ value, label })
+    }
+  }
+  return options
+})()
 
 export const TORONTO_REGION_NAMES = ['Toronto #1', 'Toronto #2']
 

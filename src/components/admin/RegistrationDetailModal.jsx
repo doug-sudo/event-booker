@@ -1,8 +1,14 @@
 import Modal from '../ui/Modal'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
-import { REGISTRATION_STATUSES } from '../../utils/constants'
+import { REGISTRATION_STATUSES, TIME_OPTIONS } from '../../utils/constants'
 import { formatFullDate } from '../../utils/dateFormatters'
+
+function formatTime(value) {
+  if (!value) return ''
+  const opt = TIME_OPTIONS.find((t) => t.value === value)
+  return opt ? opt.label : value
+}
 
 export default function RegistrationDetailModal({
   registration,
@@ -20,6 +26,14 @@ export default function RegistrationDetailModal({
       : registration.status === 'pending'
         ? 'yellow'
         : 'red'
+
+  // Event hours display
+  const eventHoursEntries = registration.event_hours ? Object.entries(registration.event_hours) : []
+  const hasEventHours = eventHoursEntries.some(([, h]) => h.open || h.close)
+
+  // Backward compat: show liftgate if present, fall back to loading dock for old records
+  const hasLiftgateField = registration.requires_liftgate !== null && registration.requires_liftgate !== undefined
+  const hasLoadingDockField = registration.has_loading_dock !== null && registration.has_loading_dock !== undefined
 
   return (
     <Modal
@@ -90,12 +104,31 @@ export default function RegistrationDetailModal({
             <p className="text-gray-500">Foot Traffic</p>
             <p className="font-medium">{registration.foot_traffic || '—'}</p>
           </div>
-          <div>
-            <p className="text-gray-500">Loading Dock</p>
-            <p className="font-medium">
-              {registration.has_loading_dock === true ? 'Yes' : registration.has_loading_dock === false ? 'No' : '—'}
-            </p>
-          </div>
+          {/* Liftgate (new) or Loading Dock (old records) */}
+          {hasLiftgateField ? (
+            <div>
+              <p className="text-gray-500">Liftgate Required</p>
+              <p className="font-medium">
+                {registration.requires_liftgate === true ? 'Yes' : 'No'}
+              </p>
+            </div>
+          ) : hasLoadingDockField ? (
+            <div>
+              <p className="text-gray-500">Loading Dock</p>
+              <p className="font-medium">
+                {registration.has_loading_dock === true ? 'Yes' : 'No'}
+              </p>
+            </div>
+          ) : null}
+          {/* Pallets Available (new) */}
+          {registration.can_provide_pallets !== null && registration.can_provide_pallets !== undefined && (
+            <div>
+              <p className="text-gray-500">Pallets Available</p>
+              <p className="font-medium">
+                {registration.can_provide_pallets === true ? 'Yes' : 'No'}
+              </p>
+            </div>
+          )}
         </div>
 
         {registration.preferred_dates &&
@@ -107,6 +140,26 @@ export default function RegistrationDetailModal({
               </p>
             </div>
           )}
+
+        {/* Event Hours */}
+        {hasEventHours && (
+          <div className="text-sm">
+            <p className="text-gray-500 mb-1">Event Hours</p>
+            <div className="space-y-0.5">
+              {eventHoursEntries.map(([dateStr, hours]) => {
+                if (!hours.open && !hours.close) return null
+                const d = new Date(dateStr + 'T00:00:00')
+                const dayLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                return (
+                  <p key={dateStr} className="text-gray-700">
+                    <span className="font-medium">{dayLabel}:</span>{' '}
+                    {formatTime(hours.open) || '—'} – {formatTime(hours.close) || '—'}
+                  </p>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Event Requirements */}
         {registration.event_requirements &&

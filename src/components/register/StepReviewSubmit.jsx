@@ -1,4 +1,10 @@
-import { EVENT_REQUIREMENTS, TORONTO_REGION_NAMES } from '../../utils/constants'
+import { EVENT_REQUIREMENTS, TORONTO_REGION_NAMES, TIME_OPTIONS } from '../../utils/constants'
+
+function formatTime(value) {
+  if (!value) return ''
+  const opt = TIME_OPTIONS.find((t) => t.value === value)
+  return opt ? opt.label : value
+}
 
 export default function StepReviewSubmit({
   formData,
@@ -13,6 +19,10 @@ export default function StepReviewSubmit({
 
   const confirmedReqs = formData.event_requirements || []
   const unconfirmedReqs = EVENT_REQUIREMENTS.filter((r) => !confirmedReqs.includes(r))
+
+  // Build event hours display
+  const eventHoursEntries = formData.event_hours ? Object.entries(formData.event_hours) : []
+  const hasEventHours = eventHoursEntries.some(([, h]) => h.open || h.close)
 
   return (
     <div className="space-y-6">
@@ -70,17 +80,27 @@ export default function StepReviewSubmit({
             <dt className="text-gray-500">Foot Traffic</dt>
             <dd className="font-medium text-gray-900">{formData.foot_traffic || '—'}</dd>
           </div>
-          <div>
-            <dt className="text-gray-500">Loading Dock</dt>
-            <dd className="font-medium text-gray-900">
-              {formData.has_loading_dock === true ? 'Yes' : formData.has_loading_dock === false ? 'No' : '—'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-gray-500">Special Notes</dt>
-            <dd className="font-medium text-gray-900">{formData.special_notes || '—'}</dd>
-          </div>
         </dl>
+
+        {/* Event Hours */}
+        {hasEventHours && (
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <p className="text-xs font-semibold text-gray-500 mb-1">Event Hours</p>
+            <div className="space-y-1">
+              {eventHoursEntries.map(([dateStr, hours]) => {
+                if (!hours.open && !hours.close) return null
+                const d = new Date(dateStr + 'T00:00:00')
+                const dayLabel = d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                return (
+                  <p key={dateStr} className="text-sm text-gray-700">
+                    <span className="font-medium">{dayLabel}:</span>{' '}
+                    {formatTime(hours.open) || '—'} – {formatTime(hours.close) || '—'}
+                  </p>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Event Requirements */}
         {confirmedReqs.length > 0 && (
@@ -104,6 +124,31 @@ export default function StepReviewSubmit({
             </ul>
           </div>
         )}
+      </div>
+
+      {/* Shipping & Logistics */}
+      <div className="bg-gray-50 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Shipping & Logistics</h3>
+        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+          <div>
+            <dt className="text-gray-500">Liftgate Required</dt>
+            <dd className="font-medium text-gray-900">
+              {formData.requires_liftgate === true ? 'Yes' : formData.requires_liftgate === false ? 'No' : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-gray-500">Pallets Available</dt>
+            <dd className="font-medium text-gray-900">
+              {formData.can_provide_pallets === true ? 'Yes' : formData.can_provide_pallets === false ? 'No' : '—'}
+            </dd>
+          </div>
+          {formData.special_notes && (
+            <div className="col-span-2">
+              <dt className="text-gray-500">Special Notes</dt>
+              <dd className="font-medium text-gray-900">{formData.special_notes}</dd>
+            </div>
+          )}
+        </dl>
       </div>
 
       {/* Logo */}

@@ -28,7 +28,9 @@ Deno.serve(async (req: Request) => {
       include_friday,
       special_notes,
       event_requirements,
-      has_loading_dock,
+      requires_liftgate,
+      can_provide_pallets,
+      event_hours,
     } = payload
 
     const datesDisplay =
@@ -60,7 +62,9 @@ Deno.serve(async (req: Request) => {
       include_friday,
       special_notes,
       event_requirements,
-      has_loading_dock,
+      requires_liftgate,
+      can_provide_pallets,
+      event_hours,
     })
 
     const [confirmResult, adminResult] = await Promise.allSettled([
@@ -125,6 +129,15 @@ async function sendEmail({
   }
 
   return res.json()
+}
+
+function formatTime12h(value: string): string {
+  if (!value) return ""
+  const [hStr, mStr] = value.split(":")
+  const h = parseInt(hStr, 10)
+  const hour12 = h > 12 ? h - 12 : h === 0 ? 12 : h
+  const ampm = h >= 12 ? "PM" : "AM"
+  return `${hour12}:${mStr} ${ampm}`
 }
 
 function buildConfirmationEmail({
@@ -209,7 +222,9 @@ function buildAdminNotificationEmail({
   include_friday,
   special_notes,
   event_requirements,
-  has_loading_dock,
+  requires_liftgate,
+  can_provide_pallets,
+  event_hours,
 }: {
   store_name: string
   contact_name: string
@@ -223,7 +238,9 @@ function buildAdminNotificationEmail({
   include_friday: boolean
   special_notes: string
   event_requirements: string[]
-  has_loading_dock: boolean | null
+  requires_liftgate: boolean | null
+  can_provide_pallets: boolean | null
+  event_hours: Record<string, { open: string; close: string }> | null
 }) {
   const requirementsList =
     Array.isArray(event_requirements) && event_requirements.length > 0
@@ -237,12 +254,44 @@ function buildAdminNotificationEmail({
         : "Weekend (Sat-Sun)"
       : "Weekday"
 
-  const dockDisplay =
-    has_loading_dock === true
+  const liftgateDisplay =
+    requires_liftgate === true
       ? "Yes"
-      : has_loading_dock === false
+      : requires_liftgate === false
         ? "No"
         : "Not specified"
+
+  const palletsDisplay =
+    can_provide_pallets === true
+      ? "Yes"
+      : can_provide_pallets === false
+        ? "No"
+        : "Not specified"
+
+  // Build event hours HTML
+  let eventHoursHtml = ""
+  if (event_hours && typeof event_hours === "object") {
+    const entries = Object.entries(event_hours).filter(
+      ([, h]) => h.open || h.close
+    )
+    if (entries.length > 0) {
+      const rows = entries
+        .map(([dateStr, hours]) => {
+          const d = new Date(dateStr + "T00:00:00")
+          const dayLabel = d.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "short",
+            day: "numeric",
+          })
+          const openStr = hours.open ? formatTime12h(hours.open) : "—"
+          const closeStr = hours.close ? formatTime12h(hours.close) : "—"
+          return `<tr><td style="padding:3px 0;color:#6b7280;">${dayLabel}:</td><td style="padding:3px 0;">${openStr} – ${closeStr}</td></tr>`
+        })
+        .join("")
+      eventHoursHtml = `<h2 style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">Event Hours</h2>
+      <table style="width:100%;font-size:14px;color:#1f2937;margin:0 0 20px;">${rows}</table>`
+    }
+  }
 
   return `<!DOCTYPE html>
 <html>
@@ -272,14 +321,22 @@ function buildAdminNotificationEmail({
         <tr><td style="padding:3px 0;color:#6b7280;">Slot Type:</td><td style="padding:3px 0;">${slotDisplay}</td></tr>
         <tr><td style="padding:3px 0;color:#6b7280;">Dates:</td><td style="padding:3px 0;">${datesDisplay}</td></tr>
         <tr><td style="padding:3px 0;color:#6b7280;">Foot Traffic:</td><td style="padding:3px 0;">${foot_traffic || "Not specified"}</td></tr>
-        <tr><td style="padding:3px 0;color:#6b7280;">Loading Dock:</td><td style="padding:3px 0;">${dockDisplay}</td></tr>
       </table>
+      ${eventHoursHtml}
       <h2 style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">
         Confirmed Requirements
       </h2>
       <ul style="font-size:14px;color:#1f2937;padding-left:20px;margin:0 0 20px;">
         ${requirementsList}
       </ul>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />
+      <h2 style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">
+        Shipping & Logistics
+      </h2>
+      <table style="width:100%;font-size:14px;color:#1f2937;margin:0 0 20px;">
+        <tr><td style="padding:3px 0;width:140px;color:#6b7280;">Liftgate Required:</td><td style="padding:3px 0;">${liftgateDisplay}</td></tr>
+        <tr><td style="padding:3px 0;color:#6b7280;">Pallets Available:</td><td style="padding:3px 0;">${palletsDisplay}</td></tr>
+      </table>
       ${
         special_notes
           ? `<h2 style="font-size:14px;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 8px;">Special Notes</h2>

@@ -38,7 +38,9 @@ supabase/
 - **Calendar slots:** Generated client-side via `calendarHelpers.js`. Three types: `weekday` (Tue/Wed/Thu), `friday` (linked to weekends), `weekend` (Sat-Sun pair). ~260 slots/year.
 - **Calendar default view:** Shows only Fri + Sat-Sun columns by default. Toggle "Show weekday slots" reveals Tue/Wed/Thu. This keeps availability looking tight.
 - **Email service:** Uses direct `fetch` to Supabase Edge Function (not `supabase.functions.invoke` — that didn't work in Vercel production builds). Fire-and-forget pattern.
-- **Registration flow:** Schedule page (pick region → pick date) → Registration wizard (4 steps) → Supabase insert → email notifications
+- **Registration flow:** Schedule page (pick region → pick date → confirm) → Registration wizard (4 steps) → Supabase insert → email notifications
+- **Registration Step 2 (Preferences):** Event hours per day (dynamic based on slot type + include_friday), foot traffic, event requirements checklist, grouped Shipping & Logistics section (liftgate Y/N, pallets Y/N, special notes), W9 upload (US only).
+- **Registration DB fields:** `requires_liftgate`, `can_provide_pallets`, `event_hours` (JSONB keyed by date, e.g. `{"2026-03-14": {"open":"10:00","close":"18:00"}}`). Legacy `has_loading_dock` column kept for backward compat.
 - **Booked events anonymized:** Calendar shows uniform gray "Booked" cells — no partner names or colors visible to public.
 - **Responsibility sections:** Collapsible accordions using CSS `grid-rows` transitions, collapsed by default.
 
