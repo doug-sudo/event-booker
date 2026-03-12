@@ -12,7 +12,7 @@ export default function PartnerLogos() {
             key={partner.name}
             src={partner.logo}
             alt={partner.name}
-            className="h-10 sm:h-12 object-contain grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all"
+            className="h-10 sm:h-12 max-w-[140px] sm:max-w-[160px] object-contain grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all"
           />
         ))}
       </div>
