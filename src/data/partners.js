@@ -5,7 +5,7 @@ export const partners = [
   { name: 'Source for Sports', logo: '/images/partner-logos/logo-source-for-hockey-social-share.webp' },
   { name: 'Sports Excellence', logo: '/images/partner-logos/Sports-Excellence-Logo-1-1.png' },
   { name: 'Rawlings', logo: '/images/partner-logos/Rawlings_logo.png' },
-  { name: 'MonkeySports', logo: '/images/partner-logos/MonkeySports_FullColor_Light.png' },
+  { name: 'MonkeySports', logo: '/images/partner-logos/MonkeySports_FullColor_Dark.png' },
   { name: 'Sporting Life', logo: '/images/partner-logos/SportingLife_logo.png' },
   { name: 'Team Town Sports', logo: '/images/partner-logos/team-town.png' },
   { name: 'Burton', logo: '/images/partner-logos/Burton.png' },
