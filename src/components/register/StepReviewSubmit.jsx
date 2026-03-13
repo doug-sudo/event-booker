@@ -131,6 +131,12 @@ export default function StepReviewSubmit({
         <h3 className="text-sm font-semibold text-gray-700 mb-3">Shipping & Logistics</h3>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
           <div>
+            <dt className="text-gray-500">Loading Dock</dt>
+            <dd className="font-medium text-gray-900">
+              {formData.has_loading_dock === true ? 'Yes' : formData.has_loading_dock === false ? 'No' : '—'}
+            </dd>
+          </div>
+          <div>
             <dt className="text-gray-500">Liftgate Required</dt>
             <dd className="font-medium text-gray-900">
               {formData.requires_liftgate === true ? 'Yes' : formData.requires_liftgate === false ? 'No' : '—'}
@@ -166,10 +172,12 @@ export default function StepReviewSubmit({
         </div>
       )}
 
-      {/* W9 */}
-      {!isToronto && w9File && (
+      {/* W9 / Wire Transfer */}
+      {w9File && (
         <div className="bg-gray-50 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">W-9 Form</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">
+            {isToronto ? 'W-9 / Wire Transfer Info' : 'W-9 Form'}
+          </h3>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center">
               <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

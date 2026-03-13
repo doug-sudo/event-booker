@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { EVENT_TYPES } from '../../utils/constants'
 import { formatSlotDate, formatDate } from '../../utils/dateFormatters'
 
+// Today's date string for past-date comparison (YYYY-MM-DD)
+const todayStr = new Date().toISOString().slice(0, 10)
+
 export default function CalendarSlotCell({ slot, event, regionId, weekendEvent, onSelectSlot, isSelected }) {
   const [showTooltip, setShowTooltip] = useState(false)
 
@@ -14,6 +17,9 @@ export default function CalendarSlotCell({ slot, event, regionId, weekendEvent, 
   const isBooked = event && !isHoliday
   const isOpen = !event
 
+  // Past-date check: use endDate for weekends (Sunday), date for others
+  const isPast = (slot.type === 'weekend' ? slot.endDate : slot.date) < todayStr
+
   // Friday-specific logic:
   // If this is a Friday slot and the weekend is booked by someone else, Friday is unavailable
   const isFridayBlocked =
@@ -22,7 +28,7 @@ export default function CalendarSlotCell({ slot, event, regionId, weekendEvent, 
   const eventInfo = event ? EVENT_TYPES[event.event_type] : null
 
   function handleClick() {
-    if (!regionId || !onSelectSlot) return
+    if (!regionId || !onSelectSlot || isPast) return
 
     if (slot.type === 'friday' && isOpen && !isFridayBlocked) {
       onSelectSlot(slot, 'friday')
@@ -33,11 +39,13 @@ export default function CalendarSlotCell({ slot, event, regionId, weekendEvent, 
     }
   }
 
-  const disabled = !isOpen || isFridayBlocked
+  const disabled = !isOpen || isFridayBlocked || isPast
 
   // Determine cell styling
   let cellClasses = 'w-full px-1 py-1 rounded text-xs font-medium transition-all text-center truncate '
-  if (isHoliday) {
+  if (isPast) {
+    cellClasses += 'bg-gray-50 text-gray-300 cursor-not-allowed'
+  } else if (isHoliday) {
     cellClasses += 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
   } else if (isBooked) {
     cellClasses += 'bg-gray-400 text-white cursor-default'

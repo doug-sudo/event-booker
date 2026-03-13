@@ -104,22 +104,24 @@ export default function RegistrationDetailModal({
             <p className="text-gray-500">Foot Traffic</p>
             <p className="font-medium">{registration.foot_traffic || '—'}</p>
           </div>
-          {/* Liftgate (new) or Loading Dock (old records) */}
-          {hasLiftgateField ? (
-            <div>
-              <p className="text-gray-500">Liftgate Required</p>
-              <p className="font-medium">
-                {registration.requires_liftgate === true ? 'Yes' : 'No'}
-              </p>
-            </div>
-          ) : hasLoadingDockField ? (
+          {/* Loading Dock */}
+          {hasLoadingDockField && (
             <div>
               <p className="text-gray-500">Loading Dock</p>
               <p className="font-medium">
                 {registration.has_loading_dock === true ? 'Yes' : 'No'}
               </p>
             </div>
-          ) : null}
+          )}
+          {/* Liftgate Required */}
+          {hasLiftgateField && (
+            <div>
+              <p className="text-gray-500">Liftgate Required</p>
+              <p className="font-medium">
+                {registration.requires_liftgate === true ? 'Yes' : 'No'}
+              </p>
+            </div>
+          )}
           {/* Pallets Available (new) */}
           {registration.can_provide_pallets !== null && registration.can_provide_pallets !== undefined && (
             <div>
@@ -181,28 +183,76 @@ export default function RegistrationDetailModal({
           </div>
         )}
 
-        {registration.logo_url && (
-          <div>
-            <p className="text-sm text-gray-500 mb-2">Store Logo</p>
-            <img
-              src={registration.logo_url}
-              alt="Store logo"
-              className="h-16 object-contain bg-gray-50 rounded-lg border p-2"
-            />
-          </div>
-        )}
-
-        {registration.w9_url && (
+        {/* Documents Section */}
+        {(registration.logo_url || registration.w9_url) && (
           <div className="text-sm">
-            <p className="text-gray-500 mb-1">W-9 Form</p>
-            <a
-              href={registration.w9_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              View W-9
-            </a>
+            <p className="text-gray-500 mb-2 font-semibold">Documents</p>
+            <div className="space-y-3">
+              {registration.logo_url && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <img
+                    src={registration.logo_url}
+                    alt="Store logo"
+                    className="h-12 w-12 object-contain bg-white rounded border p-1 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">Store Logo</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {registration.logo_url.split('/').pop()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={registration.logo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary-dark font-medium text-xs"
+                    >
+                      View
+                    </a>
+                    <a
+                      href={registration.logo_url}
+                      download
+                      className="text-primary hover:text-primary-dark font-medium text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+              {registration.w9_url && (
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="h-12 w-12 bg-white rounded border flex items-center justify-center shrink-0">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 truncate">W-9 / Wire Transfer</p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {registration.w9_url.split('/').pop()}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href={registration.w9_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary-dark font-medium text-xs"
+                    >
+                      View
+                    </a>
+                    <a
+                      href={registration.w9_url}
+                      download
+                      className="text-primary hover:text-primary-dark font-medium text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

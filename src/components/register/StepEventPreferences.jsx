@@ -154,29 +154,6 @@ export default function StepEventPreferences({ formData, errors, onChange, regio
         </label>
       )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Preferred Date(s) <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={datesValue}
-          onChange={(e) => handleDatesChange('preferred_dates', e.target.value)}
-          placeholder="e.g. 2026-03-14, 2026-04-18"
-          className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-1 ${
-            errors.preferred_dates
-              ? 'border-red-300 focus:ring-red-500'
-              : 'border-gray-300 focus:ring-primary focus:border-primary'
-          }`}
-        />
-        <p className="mt-1 text-xs text-gray-500">
-          Enter one or more dates separated by commas (YYYY-MM-DD format)
-        </p>
-        {errors.preferred_dates && (
-          <p className="mt-1 text-sm text-red-600">{errors.preferred_dates}</p>
-        )}
-      </div>
-
       {/* Event Hours */}
       {eventDays.length > 0 && (
         <div>
@@ -265,6 +242,35 @@ export default function StepEventPreferences({ formData, errors, onChange, regio
           Shipping & Logistics
         </h3>
 
+        {/* Loading Dock */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Do you have a loading dock?
+          </label>
+          <div className="flex gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="has_loading_dock"
+                checked={formData.has_loading_dock === true}
+                onChange={() => onChange('has_loading_dock', true)}
+                className="w-4 h-4 text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-gray-700">Yes</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="has_loading_dock"
+                checked={formData.has_loading_dock === false}
+                onChange={() => onChange('has_loading_dock', false)}
+                className="w-4 h-4 text-primary focus:ring-primary"
+              />
+              <span className="text-sm text-gray-700">No</span>
+            </label>
+          </div>
+        </div>
+
         {/* Liftgate Required */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -335,18 +341,34 @@ export default function StepEventPreferences({ formData, errors, onChange, regio
         />
       </div>
 
-      {/* W9 Upload — US stores only */}
-      {!isToronto && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            W-9 Form Upload <span className="text-xs text-gray-400">(optional)</span>
-          </label>
-          <p className="text-xs text-gray-500 mb-2">
-            Upload a completed W-9 form. Accepted formats: PDF, PNG, JPG (max 10MB).
+      {/* W9 / Wire Transfer Upload — all regions */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {isToronto ? 'W-9 / Wire Transfer Information' : 'W-9 Form Upload'}{' '}
+          <span className="text-xs text-gray-400">(optional)</span>
+        </label>
+        <p className="text-xs text-gray-500 mb-2">
+          Upload a completed {isToronto ? 'W-9 or wire transfer form' : 'W-9 form'}. Accepted formats: PDF, PNG, JPG (max 10MB).
+        </p>
+        {isToronto && (
+          <p className="text-xs text-gray-500 mb-2 flex items-center gap-1">
+            <span>Canadian partners: use this field to upload your bank wire transfer information.</span>
+            <a
+              href="/documents/International-Wire-Transfer-Information.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-0.5 text-primary hover:text-primary-dark font-medium"
+              title="Download blank wire transfer form"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Download blank form</span>
+            </a>
           </p>
-          <W9Dropzone file={w9File} onFileChange={onW9Change} />
-        </div>
-      )}
+        )}
+        <W9Dropzone file={w9File} onFileChange={onW9Change} />
+      </div>
     </div>
   )
 }

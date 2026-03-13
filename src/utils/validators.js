@@ -49,11 +49,7 @@ export function validateStep(step, formData) {
     if (zipErr) errors.zip = zipErr
   }
 
-  if (step === 1) {
-    if (!formData.preferred_dates || formData.preferred_dates.length === 0) {
-      errors.preferred_dates = 'Select at least one preferred date'
-    }
-  }
+  // Step 1: no required fields (dates are pre-set from calendar selection)
 
   // Step 2 (logo upload) is optional
   // Step 3 (review) validates T&C only in the component

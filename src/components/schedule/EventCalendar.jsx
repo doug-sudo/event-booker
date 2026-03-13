@@ -54,9 +54,10 @@ export default function EventCalendar({ events, regionId, loading }) {
   }
 
   // Filter slots based on view mode
+  // Default: only weekend (Sat-Sun). Toggled: all slots (Tue-Fri + Sat-Sun)
   const visibleSlots = showWeekdays
     ? allSlots
-    : allSlots.filter((s) => s.type === 'friday' || s.type === 'weekend')
+    : allSlots.filter((s) => s.type === 'weekend')
 
   // Count booked slots (non-holiday events)
   const bookedCount = events.filter((e) => e.event_type !== 'HOLIDAY').length

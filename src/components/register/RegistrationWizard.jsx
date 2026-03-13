@@ -41,6 +41,7 @@ export default function RegistrationWizard({ initialRegionId, initialDate, initi
     foot_traffic: '',
     special_notes: '',
     event_requirements: [],
+    has_loading_dock: null,
     requires_liftgate: null,
     can_provide_pallets: null,
     event_hours: {},

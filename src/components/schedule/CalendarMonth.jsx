@@ -4,17 +4,17 @@ import { getWeeksForMonth, findEventForSlot, MONTH_NAMES } from '../../utils/cal
 export default function CalendarMonth({ month, slots, events, regionId, showWeekdays, selectedSlot, onSelectSlot }) {
   const weeks = getWeeksForMonth(slots, month)
 
-  // When weekdays hidden, skip weeks that have no Fri or Weekend slot
+  // When weekdays hidden, skip weeks that have no Weekend slot
   const visibleWeeks = showWeekdays
     ? weeks
-    : weeks.filter((w) => w.fri || w.weekend)
+    : weeks.filter((w) => w.weekend)
 
   const isSlotSelected = (slot) =>
     selectedSlot && slot && selectedSlot.date === slot.date && selectedSlot.type === slot.type
 
   const gridCols = showWeekdays
     ? 'grid-cols-[1fr_1fr_1fr_1fr_1.4fr]'
-    : 'grid-cols-[1fr_1.4fr]'
+    : 'grid-cols-[1fr]'
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-4">
@@ -33,9 +33,9 @@ export default function CalendarMonth({ month, slots, events, regionId, showWeek
                 <div className="text-[10px] font-medium text-gray-400 text-center">Tue</div>
                 <div className="text-[10px] font-medium text-gray-400 text-center">Wed</div>
                 <div className="text-[10px] font-medium text-gray-400 text-center">Thu</div>
+                <div className="text-[10px] font-medium text-gray-400 text-center border-l border-gray-100 pl-1">Fri</div>
               </>
             )}
-            <div className={`text-[10px] font-medium text-gray-400 text-center ${showWeekdays ? 'border-l border-gray-100 pl-1' : ''}`}>Fri</div>
             <div className="text-[10px] font-medium text-gray-400 text-center">Sat-Sun</div>
           </div>
 
@@ -73,18 +73,18 @@ export default function CalendarMonth({ month, slots, events, regionId, showWeek
                         onSelectSlot={onSelectSlot}
                         isSelected={isSlotSelected(week.thu)}
                       />
+                      <div className="border-l border-gray-100 pl-1">
+                        <CalendarSlotCell
+                          slot={week.fri}
+                          event={friEvent}
+                          regionId={regionId}
+                          weekendEvent={weekendEvent}
+                          onSelectSlot={onSelectSlot}
+                          isSelected={isSlotSelected(week.fri)}
+                        />
+                      </div>
                     </>
                   )}
-                  <div className={showWeekdays ? 'border-l border-gray-100 pl-1' : ''}>
-                    <CalendarSlotCell
-                      slot={week.fri}
-                      event={friEvent}
-                      regionId={regionId}
-                      weekendEvent={weekendEvent}
-                      onSelectSlot={onSelectSlot}
-                      isSelected={isSlotSelected(week.fri)}
-                    />
-                  </div>
                   <CalendarSlotCell
                     slot={week.weekend}
                     event={weekendEvent}
