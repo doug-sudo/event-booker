@@ -183,10 +183,10 @@ export default function RegistrationDetailModal({
           </div>
         )}
 
-        {/* Documents Section */}
-        {(registration.logo_url || registration.w9_url) && (
-          <div className="text-sm">
-            <p className="text-gray-500 mb-2 font-semibold">Documents</p>
+        {/* Documents Section — always visible */}
+        <div className="text-sm">
+          <p className="text-gray-500 mb-2 font-semibold">Documents</p>
+          {registration.logo_url || registration.w9_url ? (
             <div className="space-y-3">
               {registration.logo_url && (
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
@@ -253,8 +253,10 @@ export default function RegistrationDetailModal({
                 </div>
               )}
             </div>
-          </div>
-        )}
+          ) : (
+            <p className="text-gray-400 italic">No documents uploaded</p>
+          )}
+        </div>
       </div>
     </Modal>
   )
